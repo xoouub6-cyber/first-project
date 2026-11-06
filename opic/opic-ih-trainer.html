@@ -330,7 +330,12 @@ const TOPICS = [
   {id:"hospital",g:"돌발",name:"병원",qs:[
     {t:"desc",q:"Describe a hospital or clinic you have visited."},
     {t:"routine",q:"What do you usually do when you feel sick?"},
-    {t:"exp",q:"Tell me about a time when you had to go to the hospital.",s:"hosp_exp"}]}
+    {t:"exp",q:"Tell me about a time when you had to go to the hospital.",s:"hosp_exp"}]},
+  {id:"pharmacy",g:"돌발",name:"약국 (신규)",qs:[
+    {t:"desc",q:"Describe a pharmacy in your neighborhood. What does it look like and what can you buy there?",s:"pharm_desc"},
+    {t:"routine",q:"What do you usually do when you go to a pharmacy? Tell me step by step."},
+    {t:"exp",q:"Tell me about a memorable experience you had at a pharmacy."},
+    {t:"compare",q:"How have pharmacies changed compared to the past?"}]}
 ];
 
 const RP = [
@@ -364,6 +369,7 @@ bank_desc:"Well, there's a bank right in front of my office, so I go there quite
 rest_exp:"Let me tell you about a time when I had a bad experience at a restaurant. It was last year, on my mom's birthday. I booked a table at a fancy Italian restaurant a week in advance. But when we got there, the staff said there was no reservation under my name. I was like, what? I showed them the confirmation text, and it turned out that they made a mistake. Unfortunately, the restaurant was full, so we had to wait for about 30 minutes. I was really upset because it was a special day. But the manager came out and apologized, and he gave us a free dessert and a bottle of wine. The food was really delicious, so in the end, my mom was happy. Looking back, it was kind of a stressful day, but they handled it really well. Since then, I always call the restaurant to double-check my reservation.",
 salon_routine:"I usually go to the hair salon once every two months. Before I go, I always make a reservation through an app, because the salon I go to is pretty popular. When I get there, the staff greets me and offers me a drink, like coffee or tea. Then, I sit down and talk with my hairdresser about what style I want. I usually show some pictures on my phone to explain it. After that, they wash my hair and start cutting. It takes about an hour. While I'm waiting, I usually read a magazine or just chat with the hairdresser. Finally, they blow-dry my hair and style it. I always feel so refreshed after a haircut. It's like a small reward for myself. So yeah, that's what I usually do at the hair salon.",
 hosp_exp:"Let me tell you about the time I went to the emergency room. It was about a year ago, around midnight. All of a sudden, I got a terrible stomachache. At first, I thought it was just indigestion, so I took some medicine. But it got worse and worse, and I couldn't even stand up. I had no idea what to do, so my brother drove me to the hospital. When we got there, the doctor checked me and said I might have appendicitis. I was so scared. Luckily, it turned out that it was just a bad case of food poisoning. I got a shot and stayed there for a few hours. Looking back, it was a really scary night, but I was so thankful for my brother and the medical staff. Since then, I've been really careful about what I eat.",
+pharm_desc:"Oh, you wanna know about the pharmacy in my neighborhood? Sure. There's a small pharmacy right next to the bus stop near my apartment, so it's really easy to get to. When you walk in, the first thing you see is a long counter where the pharmacist works. Behind the counter, there are tons of shelves full of medicine. In front of the counter, there are some products you can just pick up, like vitamins, band-aids, masks, and some skin care products. The pharmacist is really kind and always explains how to take the medicine. For example, last month I had a bad cold, and he told me to take the pills after meals and drink lots of water. What I like most about this pharmacy is that it's open until 10 p.m., so I can go there after work. That's why it's really special to me. So yeah, that's pretty much it.",
 rp11_concert:"Hi, I'm calling to ask about the concert this Saturday. I'm thinking of buying some tickets, so I have a few questions. First, I was wondering if there are still tickets available for the Saturday show. If so, could you tell me how much they are? Also, are there different seats, like VIP seats or standing seats? I want to sit close to the stage if possible. And do you happen to know what time the doors open? I want to get there early to buy some merchandise. Oh, one more thing. Is there a parking lot near the concert hall? Lastly, is it possible to get a refund if I can't make it? Okay, I think that's all. Thank you so much for your help. Have a nice day!",
 rp12_sick:"Hey Jisoo, it's me. I'm afraid I have some bad news. I'm really sorry, but I can't go to the concert with you tonight. Here's the thing. I woke up this morning with a high fever, and the doctor told me to stay home and rest. I know you were really looking forward to it, so I feel terrible. So, I was wondering if we could do something else instead. Option one: you can go with another friend. I'll give you my ticket, so you don't have to pay for it. Or, option two: we can sell the tickets online and go to another concert together next month. I'll check the schedule. If that doesn't work, how about I treat you to a nice dinner when I get better? Please let me know which works best for you. Again, I'm really sorry for the trouble.",
 rp13_cancel:"Actually, I had a similar experience a few years ago. I was planning to go on a trip to Jeju Island with my friends. We booked the flight and the hotel about a month in advance. But two days before the trip, there was a big typhoon, and all the flights were canceled. I was so disappointed because we had been looking forward to the trip for so long. At first, I had no idea what to do. So, I called the airline and the hotel. Luckily, the airline gave us a full refund, and the hotel let us change our dates for free. In the end, we went to Jeju a month later, and the weather was perfect. Looking back, it turned out to be a good thing. Since then, I always check the weather forecast before I travel."
@@ -466,6 +472,7 @@ function analyze(text,type){
     add(past>=8,past>=4,`과거시제 ${past}개`,"경험 문제는 과거시제가 가장 중요해요. was / went / had / -ed 를 의식해서 쓰세요.",3);
     add(/all of a sudden|suddenly|but then|unfortunately|turned out/i.test(raw),false,"사건 전개(갑자기·알고보니)","All of a sudden / It turned out that 으로 이야기에 굴곡을 만드세요.");
   }
+  if(["desc","routine","exp","compare"].includes(type)) add(/(for example|for instance|like when)/i.test(raw)&&/(because|that's why|since|so that)/i.test(raw),/(for example|for instance|because|that's why)/i.test(raw),"구체적 예시 + 이유","IH 답변은 상황 설명 뒤에 예시(For example, ~)와 이유(because ~)가 이어져요. 둘 다 한 번씩 넣어보세요.");
   if(type==="routine") add(/(first|after that|and then|finally|before i)/i.test(raw)&&conn.length>=4,/(first|then)/i.test(raw),"순서 표현","First → After that → And then → Finally 로 시간 순서를 보여주세요.");
   if(type==="compare") add(/(back in the day|used to|in the past|when i was)/i.test(raw)&&/(these days|nowadays|now)/i.test(raw),/(past|now|these days)/i.test(raw),"과거 vs 현재 대비","Back in the day ~ / But these days ~ 로 대비를 분명히 하세요.");
   if(type==="desc") add(/(located|there (is|are)|there's)/i.test(raw)&&/(what i like most|i love|i like)/i.test(raw),/(there (is|are)|there's|located)/i.test(raw),"묘사 디테일 + 내 생각","위치·구성(There are ~) + 좋아하는 이유(What I like most ~)를 모두 넣으세요.");
@@ -549,11 +556,13 @@ function vGuide(){
    <li><div><b>과거 경험을 시제 틀리지 않고 말한다</b><div class="ko">경험 문제(보통 4·7·10·13번)는 과거시제가 핵심이에요. 이야기 속 사건과 해결이 있어야 해요.</div></div></li>
    <li><div><b>1분 30초~2분, 멈추지 않는다</b><div class="ko">막히면 침묵 대신 필러를 쓰세요. You know, / How can I put it... / What else... oh, and</div></div></li>
    <li><div><b>롤플레이를 끝까지 해낸다</b><div class="ko">11번 질문 3~4개, 12번 대안 2~3개. 이 두 개만 해도 IH 근처로 올라가요.</div></div></li>
+   <li><div><b>과거·현재·미래 시제를 오간다</b><div class="ko">ACTFL 기준 IH는 세 시제로 문단 길이 이야기를 하되 '항상은 아니어도 되는' 수준이에요. 비교 문제 끝에 미래 한 문장(I think it will ~ / I'm planning to ~)을 붙이면 좋아요.</div></div></li>
+   <li><div><b>설명 → 예시 → 이유</b><div class="ko">처음 듣는 질문에도 상황을 설명하고 For example ~, because ~ 로 이어가는 게 IH의 특징이에요.</div></div></li>
    <li><div><b>모든 주제를 같은 틀로 돌려 쓴다</b><div class="ko">집·카페·공원 묘사는 같은 템플릿이에요. 주제마다 따로 외우지 말고 '나만의 소재' 몇 개를 재활용하세요.</div></div></li>
   </ol></div>
   <div class="card"><h3>시험 세팅 추천</h3>
   <ul class="small" style="margin:0;padding-left:18px">
-   <li>난이도: 처음 <b>3~4</b> 선택, 7번 이후 재조정에서 <b>'비슷하게'</b> 또는 <b>'어렵게'</b>.</li>
+   <li>난이도: 처음 고른 난이도로 문제 세트가 정해지니 목표에 맞춰 처음부터 고르세요. IH 목표라면 <b>4~5</b>, 7번 이후 재조정에서 <b>'비슷하게'</b>. 커뮤니티 정리에 따르면 14~15번 어드밴스 문제는 난이도 5~6에서 나와요.</li>
    <li>서베이: 집에서 보내는 시간, 음악 감상, 영화, 공원·걷기, 국내·해외여행처럼 서로 묶어 쓸 수 있는 주제를 고르세요.</li>
    <li>문제는 두 번까지 들을 수 있어요. 처음엔 키워드만 듣고 바로 템플릿을 떠올리세요.</li>
    <li>15번 문항 구성: 1 자기소개 · 2~10 선택/돌발 3세트 · 11~13 롤플레이 · 14~15 비교/이슈.</li>
@@ -569,6 +578,7 @@ function vGuide(){
 function vVideos(){
   return `<div class="card"><h2>참고 영상 12개</h2>
   <p class="note">영상 자막은 YouTube의 자동 접속 차단 때문에 읽을 수 없었어요. 아래 학습 내용은 영상 제목의 주제 구성에 맞춰 직접 작성한 것이에요. 영상과 함께 보면서 마음에 드는 문장은 내 답변에 바꿔 넣으세요.</p>
+  <p class="small muted">추가로 참고한 자료: <a href="https://fi.byu.edu/opi-level-descriptions" target="_blank" rel="noopener">ACTFL OPI 등급 설명 (BYU)</a> · <a href="https://community.linkareer.com/employment_data/5949985" target="_blank" rel="noopener">오픽 문항 구성 정리 (링커리어)</a> · <a href="https://recapio.com/digest/opigyaggugdeungjang25nyeon-coesindolbal-manneungpaeteon-wanjeon-jeongbog-muryopdf-gangjiwanopigtv-op" target="_blank" rel="noopener">강지완오픽TV 25년 신규 돌발(약국) 요약</a></p>
   <div>${VIDEOS.map((v,i)=>`<div class="vid"><span class="n">${String(i+1).padStart(2,"0")}</span><div><a href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener">${esc(v.t)}</a><div class="small muted">이 앱에서: ${esc(v.u)}</div></div></div>`).join("")}</div></div>`;
 }
 
